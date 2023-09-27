@@ -8,39 +8,45 @@
       "url": "https://github.com/rooseveltframework/teddy/graphs/contributors"
     }
   ],
-  "version": "0.5.10",
+  "version": "0.6.4",
   "files": [
-    "dist/teddy.js"
+    "dist/teddy.js",
+    "dist/cheerio.client.js"
   ],
   "homepage": "https://github.com/rooseveltframework/teddy",
   "license": "CC-BY-4.0",
   "main": "dist/teddy.js",
   "readmeFilename": "README.md",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "cheerio": "1.0.0-rc.12",
+    "xregexp": "5.1.1"
   },
   "devDependencies": {
-    "c8": "~7.12.0",
-    "chai": "~4.3.6",
-    "chai-string": "~1.5.0",
-    "codecov": "~3.8.3",
-    "cross-env": "~7.0.3",
-    "eslint": "~8.24.0",
-    "eslint-plugin-mocha": "~10.1.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.1.0",
-    "karma-cli": "~2.0.0",
-    "karma-coverage": "~2.2.0",
-    "karma-edge-launcher": "~0.4.2",
-    "karma-firefox-launcher": "~2.1.2",
-    "karma-html2js-preprocessor": "~1.1.0",
-    "karma-mocha": "~2.0.1",
-    "karma-spec-reporter": "~0.0.33",
-    "mocha": "~10.0.0",
-    "playwright": "~1.26.0",
-    "standard": "~17.0.0",
-    "webpack": "~5.74.0",
-    "webpack-cli": "~4.10.0"
+    "browserify": "17.0.0",
+    "c8": "8.0.1",
+    "chai": "4.3.8",
+    "chai-string": "1.5.0",
+    "codecov": "3.8.3",
+    "cross-env": "7.0.3",
+    "eslint": "8.50.0",
+    "eslint-plugin-mocha": "10.1.0",
+    "karma": "6.4.2",
+    "karma-chrome-launcher": "3.2.0",
+    "karma-cli": "2.0.0",
+    "karma-coverage": "2.2.1",
+    "karma-edge-launcher": "0.4.2",
+    "karma-firefox-launcher": "2.1.2",
+    "karma-html2js-preprocessor": "1.1.0",
+    "karma-mocha": "2.0.1",
+    "karma-spec-reporter": "0.0.36",
+    "mocha": "10.2.0",
+    "playwright": "1.37.1",
+    "standard": "17.1.0",
+    "webpack": "5.88.2",
+    "webpack-cli": "5.1.4"
   },
   "standard": {
     "ignore": [
@@ -62,16 +68,16 @@
     }
   },
   "scripts": {
-    "build": "webpack",
-    "codecov": "./node_modules/.bin/codecov",
+    "build": "browserify node_modules/cheerio/lib/index.js --s module -o dist/cheerio.client.js && webpack",
     "coverage": "cross-env NODE_ENV=cover c8 --reporter=text --reporter=lcov mocha --timeout 60000 test/*.js && karma start",
     "lint": "standard && eslint ./test",
-    "test": "cross-env NODE_ENV=test npm run test-server && karma start",
-    "test-chrome": "karma start --browsers ChromeHeadless",
-    "test-edge": "karma start --browsers Edge",
-    "test-firefox": "karma start --browsers Firefox",
-    "test-safari": "karma start --browsers Safari",
-    "test-server": "cross-env NODE_ENV=test mocha test"
+    "test": "npm run build && cross-env NODE_ENV=test mocha --timeout 60000 test && karma start",
+    "test-chrome": "npm run build && karma start --browsers ChromeHeadless",
+    "test-edge": "npm run build && karma start --browsers Edge",
+    "test-firefox": "npm run build && karma start --browsers Firefox",
+    "test-safari": "npm run build && karma start --browsers Safari",
+    "test-server": "npm run build && cross-env NODE_ENV=test mocha test",
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",

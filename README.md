@@ -9,14 +9,15 @@ Teddy is the most readable and easy to learn templating language there is!
 
 Or put a more technical way, Teddy is an easy to read, HTML-inspired, mostly logic-less DOM templating engine with support for both server-side and client-side templating.
 
-It uses HTML-like `<tags>` for rudimentary templating logic and Teddy Roosevelt's facial hair for `{variables}`.
+It uses HTML-like `<tags>` for rudimentary templating logic and Teddy Roosevelt's facial hair for `{variables}`. 
 
-![Teddy Roosevelt's facial hair is a curly brace.](https://github.com/rooseveltframework/generator-roosevelt/blob/master/generators/app/templates/statics/images/teddy.jpg "Teddy Roosevelt's facial hair is a curly brace.")
+[Check out this live demo](https://rooseveltframework.github.io/teddy/playground.html) or see below for documentation on how to write Teddy templates.
+
+![Teddy Roosevelt's facial hair is a curly brace.](https://github.com/rooseveltframework/generator-roosevelt/blob/main/generators/app/templates/statics/images/teddy.jpg "Teddy Roosevelt's facial hair is a curly brace.")
 
 
 Table of contents
 ===
-
 - [Why yet another templating engine?](https://github.com/rooseveltframework/teddy#why-yet-another-templating-engine)
   - [Other popular templating engines are too cryptic](https://github.com/rooseveltframework/teddy#other-popular-templating-engines-are-too-cryptic)
 - [Teddy, symbol-buster extraordinaire](https://github.com/rooseveltframework/teddy#teddy-symbol-buster-extraordinaire)
@@ -25,15 +26,15 @@ Table of contents
   - [Includes](https://github.com/rooseveltframework/teddy#includes)
   - [Conditionals](https://github.com/rooseveltframework/teddy#conditionals)
   - [Boolean logic](https://github.com/rooseveltframework/teddy#boolean-logic)
-  - [One line ifs](https://github.com/rooseveltframework/teddy#one-line-ifs)
+  - [One-line ifs](https://github.com/rooseveltframework/teddy#one-line-ifs)
   - [Loops](https://github.com/rooseveltframework/teddy#loops)
   - [Non-parsed-blocks](https://github.com/rooseveltframework/teddy#non-parsed-blocks)
+  - [Caching blocks](https://github.com/rooseveltframework/teddy#caching-blocks)
   - [A complex example combining many tags](https://github.com/rooseveltframework/teddy#a-complex-example-combining-many-tags)
 - [Using Teddy in Node.js](https://github.com/rooseveltframework/teddy#using-teddy-in-nodejs)
 - [Using Teddy with client-side JS](https://github.com/rooseveltframework/teddy#using-teddy-with-client-side-js)
 - [API documentation](https://github.com/rooseveltframework/teddy#api-documentation)
-
-
+- [Hacking the code](https://github.com/rooseveltframework/teddy#hacking-the-code)
 
 Why yet another templating engine?
 ===
@@ -100,7 +101,7 @@ Here's how:
 - An `<include>` tag for layout templates and partials which accepts arguments via child `<arg>` elements.
 - Flow control tags: `<if>`, `<unless>`, `<elseif>`, `<elseunless>`, and `<else>` for basic templating logic.
 - A `<loop>` tag for looping.
-- Server-side `{!comments!}` delimited by exclamation points in a fashion similar to `<!-- HTML comments -->`. Server-side comments are stripped out at the template compilation stage.
+- Server-side `{! comments !}` delimited by exclamation points in a fashion similar to `<!-- HTML comments -->`. Server-side comments are stripped out at the template compilation stage.
 
 
 How to write Teddy templates
@@ -145,7 +146,7 @@ Pass arguments to the template:
 </include>
 ```
 
-The arguments you've defined will be accessible as `{firstArgument}` and `{secondArgument}` in the child template `partial.html`.
+The arguments you've defined will be accessible as `{firstArgument}` and `{secondArgument|s}` in the child template `partial.html`. Note you must use the `|s` flag to suppress escaping HTML entities in order to render the HTML in the second argument.
 
 
 Conditionals
@@ -212,6 +213,7 @@ An `<unless>` statement structure with an `<elseunless>` tag which is evaluated 
 </else>
 ```
 
+Note: `<if something>` and `<if something=''>` are considered logically equivalent statements in Teddy. 
 
 Boolean logic
 ---
@@ -253,35 +255,38 @@ Boolean logic operators are evaluated left to right.
 </if>
 ```
 
+Note: you cannot query the same variable twice in the same if statement or use the same boolean logic operator twice in the same if statement due to the rules of HTML grammar requiring that no HTML attributes appear more than once on the same tag.
 
-One line ifs
+One-line ifs
 ---
 
 If you need a more concise conditional to control which attributes are applied to a given element, then use this syntax:
 
 ```html
-<p if-something true="class='shown'" false="class='hidden'">One line if.</p>
+<p if-something true="class='shown'" false="class='hidden'">One-line if.</p>
 ```
 
 In that structure, the attribute `if-something` checks to see if the variable `something` is truthy. This means it will check for either variable presence in the model or the boolean value `true`. If so, the class delcared in the `true` attribute is written to the element, resulting in the following output:
 
 ```html
-<p class='shown'>One line if.</p>
+<p class='shown'>One-line if.</p>
 ```
 
 If not, this will check for non-presence in the model or the boolean value `false`. If so, the class declared in the `false` attribute is written to the element, resulting in the following output:
 
 ```html
-<p class='hidden'>One line if.</p>
+<p class='hidden'>One-line if.</p>
 ```
 
 Like the `<if>` tag you can check for both the presence of a variable as well as its value. To check the value of a variable, use this syntax:
 
 ```html
-<p if-something='hello' true="class='hello'" false="class='not-hello'">One line if.</p>
+<p if-something='hello' true="class='hello'" false="class='not-hello'">One-line if.</p>
 ```
 
 It's important to note that whichever type of quotes you use on the outside of your `true` or `false` attributes must be reversed on the inside. So if you use single quotes on the outside, then you must use double quotes on the inside.
+
+Also note you can only have one one-line if statement per element.
 
 
 Loops
@@ -337,11 +342,9 @@ For the above array of objects, we can combine the techniques illustrated above 
 </loop>
 ```
 
-*Note: you can also use `in` in place of `through` if you like a more concise syntax.*
-
 ## Non-parsed blocks
 
-To skip teddy parsing a block of code, use a `<noteddy>` tag:
+To skip teddy parsing a block of code, use a `<noteddy>` or `<noparse>` tag:
 
 ```html
 <p><noteddy>{this_var_will_not_be_parsed}</noteddy></p>
@@ -353,15 +356,38 @@ You can also instruct the contents of a variable to not be parsed after that var
 <p>{this_var_will_be_parsed_but_its_contents_will_not_be|p}</p>
 ```
 
-To include a template but not render the contents, add a `noparse` or `noteddy` flag to the `<include>` tag:
+Note: Teddy tags will also not be parsed if they appear inside of elements that interpret child text as plain text, e.g. `<style>`, `<script>`, `<textarea>`, etc.
+
+Caching blocks
+---
+
+You can use a `<cache>` element to prevent Teddy from having to continuously re-render blocks of template code that frequently resolve to the same markup in order to improve template parsing performance.
+
+Here's an example:
 
 ```html
-<include src='test.html' noparse></include>
+<p>Dynamic: Welcome {user}!</p>
+<cache name="weather" key="city" maxCaches="3">
+  <p>Cached: High temperature today in {city} is {value}.</p>
+</cache>
 ```
-or
-```html
-<include src='test.html' noteddy></include>
-```
+
+In the above example, assume that there are a large number of values that `{user}` could resolve to, but there are a limited number of values that `{city}` and `{value}` could resolve to. In that case, we can cache the block of code that doesn't need re-rendering as often by enclosing it in a `<cache>` element to improve the performance of template parsing while still allowing other parts of the template to be parsed dynamically at each render.
+
+Here's what the attributes mean:
+
+- `name`: What you want to name your cache. The name is necessary so you can manually clear the cache from JavaScript later if you like via `teddy.clearCache(name, keyVal)`.
+  - `teddy.clearCache(name)` will delete the whole cache at that name, e.g. all values for `{city}`.
+  - `teddy.clearCache(name, keyVal)` will delete just the value at that keyVal, e.g. just the cache for when `{city}` resolves to NY if you set keyVal to NY.
+- `key`: The model value to use to index new caches.
+  - Example: Suppose `city` in the above example could resolve to three possible values: NY, SF, and LA. In that case, the caching feature will create 3 caches using the `city` key: one for each of the three possible values.
+- `maxAge`: How old the cache can be in milliseconds before it is invalidated and will be re-rendered.
+  - Default: 0 (no limit).
+
+- `maxCaches`: The maximum number of caches that Teddy will be allowed to create for a given `<cache>` element. If the maximum is reached, Teddy will remove the oldest cache in the stack, where oldest is defined as the least recently created *or* accessed.
+  - Default: 1000.
+
+You can also cache whole templates. For more details about that, see the API docs below. 
 
 A complex example combining many tags
 ---
@@ -415,7 +441,7 @@ Using Teddy with client-side JS
 
 You can then pass source code to Teddy's render method, like so:  `teddy.render(sourceCode, yourModel)`. The render method will return a fully rendered template. See [API documentation](https://github.com/rooseveltframework/teddy#api-documentation) for more information about the Teddy API.
 
-Teddy is supported on all modern browsers (Chrome, Firefox, Microsoft Edge [v79+], Safari). Support for Internet Explorer was dropped with Teddy 0.5.0.
+Teddy is supported on all modern browsers. Support for Internet Explorer was dropped with Teddy 0.5.0.
 
 To install without npm, you can clone this repo and build teddy manually by running `npm run build`.
 
@@ -423,40 +449,81 @@ To install without npm, you can clone this repo and build teddy manually by runn
 API documentation
 ===
 
-- `teddy.compile(template)`: Compile a template by supplying either source code or a file name (in Node.js).
-  - Populates internal `templates` cache with the new template in the format of `templates[path]: compiledSource`.
-  - Can be accessed from `teddy.getTemplates()`
 - `teddy.getTemplates()`: Get the internal cache of templates.
+
 - `teddy.setTemplate(name, template)`: Add a new template to the template cache.
+
 - `teddy.render(template, model)`: Render a template by supplying either source code or a file name (in Node.js).
+
   - Returns fully rendered HTML.
   - Removes `{! teddy comments !}`
+
 - `teddy.setTemplateRoot(path)`: Set the location of your templates directory.
+
   - Default is the current directory.
+
+- `teddy.compile(templateString)`: Takes a template string and returns a function which when given model data will render HTML from the template and model data.
+
+  - e.g.
+
+    - ```javascript
+      const templateFunction = teddy.compile('<p>{hello}</p>')
+      templateFunction({ hello: 'world' }) // returns "<p>world</p>"
+
 - `teddy.setVerbosity(n)`: Sets the level of verbosity in Teddy's console logs. Call `teddy.setVerbosity(n)` where `n` equals one of the below values to change the default:
+
   - `0`: No logging.
   - `1`: The default. Concise logging. Will usually only log serious errors.
   - `2`: Verbose logging. Logs even minor errors.
   - `3`: Debug mode. Very verbose.
-- `teddy.cacheRenders(true/false)`: When this setting is enabled, Teddy will cache all unique combinations of templates and models. Any time a template has been rendered before with the given model, the cached template will be returned instead, improving performance.
-  - Default is false. *(Feature is currently experimental.)*
-- `teddy.setDefaultCaches(n)`: Set the default number of unique caches to store per template when template caching is enabled.
-  - Default: 1.
-- `teddy.setMaxCaches(template, n)`: Set the maximum number of unique caches to store for a given template when template caching is enabled.
-- `teddy.setCacheWhitelist({'templateNameOrPath': maxCaches})`: Establish a whitelist of templates to cache and set their maxCache value.
-  - Example: `{'one.html': 1, 'two.html': 50, 'three.html': 250}`.
-  - The above example will only allow caching on one.html, two.html. and three.html. No other template renders will be cached.
-  - Also one.html will have a maximum unique cache count of 1, two.html's maximum will be 50, and three.html's maximum will be 250.
-  - Note: mutually exclusive with `teddy.setCacheBlacklist`
-- `teddy.setCacheBlacklist(templateArray)`: Establish a blacklist of templates to never cache.
-  - Example: `['one.html', 'two.html', 'three.html']`.
-  - Note: mutually exclusive with `teddy.setCacheWhitelist`.
+
 - `teddy.setDefaultParams()`: Reset all params to default.
-- `teddy.flushCache(template)`: Delete all the caches of a given template by supplying either its source code or a file name (in Node.js).
-- `teddy.flushCache(template, model)`: Delete the cache of a specific template and model combination by supplying the template's source code or file name (in Node.js) along with the desired model to match.
+
 - `teddy.maxPasses(n)`: Sets the maximum number of passes the parser can execute over your template. If this maximum is exceeded, Teddy will stop attempting to render the template. The limit exists to prevent the possibility of teddy producing infinite loops due to improperly coded templates.
-  - Default: 25000.
-- `teddy.compileAtEveryRender(true/false)`: When this setting is enabled, Teddy will compile the template at each render rather than caching previous compiles.
-  - Default is false. *(Not recommended to enable in production for performance reasons.)*
-- `teddy.minify(true/false)`: When this setting is enabled, Teddy will minify templates using its own internal minifier during the compile step.
-  - Default is false. *(Not recommended. Usually best to use a third party tool like [html-minifier](https://www.npmjs.com/package/html-minifier) instead.)*
+  - Default: 1000.
+
+- `teddy.setCache(params)`: Declare a template-level cache.
+
+  - Params:
+
+    - `template`: Name of the template to cache.
+    - `key`: Model variable to cache it by.
+      - Set to `none` to cache the first render for all model values.
+
+    - `maxAge`: How old the cache can be in milliseconds before it is invalidated and will be re-rendered.
+      - Default: 0 (no limit).
+
+    - `maxCaches`: The maximum number of caches that Teddy will be allowed to create for a given template/key combination. If the maximum is reached, Teddy will remove the oldest cache in the stack, where oldest is defined as the least recently created *or* accessed.
+      - Default: 1000.
+      - Note: does not apply to caches where `key` is not also set.
+
+  - Example:
+
+    - ```javascript
+      teddy.setCache({
+        template: 'someTemplate.html',
+        key: 'city',
+        maxAge: 1000
+      })
+
+- `teddy.clearCache(name)`: If `name` is a string, it will delete the whole cache at that name.
+
+- `teddy.clearCache(name, keyVal)`: Deletes just the value at that keyVal. Assumes `name` will be a string.
+
+- `teddy.clearCache(params)`: If `params` is an object, it will delete a whole template-level cache.
+
+  - Params:
+    - `template`: Name of the template to delete the cache of.
+    - `key`: Model variable cache index to delete it by.
+      - If `key` is not provided, it will delete all caches of that template.
+
+
+Hacking the code
+===
+
+If you want to write code for this project, here's how to set up a development environment:
+
+- Fork/clone this repo.
+- Install dependencies: `npm ci`
+- Do a build: `npm run build` — builds are needed after every code change.
+- Run the tests: `npm t`

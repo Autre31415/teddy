@@ -13,6 +13,10 @@ if (typeof process === 'object') {
   chai.use(chaiString)
 }
 
+function timeout (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 describe('Misc', function () {
   before(function () {
     teddy.setTemplateRoot('test/templates')
@@ -26,166 +30,520 @@ describe('Misc', function () {
     }
   })
 
-  it('should not escape HTML entities present in {variables} which are properly {flagged|p|s} (misc/barPandSTest.html)', function (done) {
+  it('should compile a template and return a function which when given data will render HTML', function () {
+    const templateFunction = teddy.compile('<p>{hello}</p>')
+    assert.equalIgnoreSpaces(templateFunction({ hello: 'world' }), '<p>world</p>')
+  })
+
+  it('should not escape HTML entities present in {variables} which are properly {flagged|p|s} (misc/barPandSTest.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/barPandSTest.html', model), '<h1>double bars</h1> {something}')
-    done()
   })
 
-  it('should not escape HTML entities present in {variables} which are properly {flagged|s|p} (misc/barSandPTest.html)', function (done) {
+  it('should not escape HTML entities present in {variables} which are properly {flagged|s|p} (misc/barSandPTest.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/barSandPTest.html', model), '<h1>double bars</h1> {something}')
-    done()
   })
 
-  it('should render {variables} (misc/variable.html)', function (done) {
+  it('should render {variables} (misc/variable.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/variable.html', model), '<p>Some content</p>')
-    done()
   })
 
-  it('should render multiple {variables} (misc/multipleVariables.html)', function (done) {
+  it('should render multiple {variables} (misc/multipleVariables.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/multipleVariables.html', model), '<p>Some content</p> <h5>More content</h5>')
-    done()
   })
 
-  it('should render nested {variables} (misc/nestedVars.html)', function (done) {
+  it('should render nested {variables} (misc/nestedVars.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/nestedVars.html', model), '<p>Variable with a variable inside: And another: Some content</p>')
-    done()
   })
 
-  it('should not render nested {variables|p} (misc/nestedVarsParseFlag.html)', function (done) {
+  it('should not render nested {variables|p} (misc/nestedVarsParseFlag.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/nestedVarsParseFlag.html', model), '<p>Variable with a variable inside: {subVar}</p>')
-    done()
   })
 
-  it('should properly escape HTML entities present in {variables} (misc/varEscaping.html)', function (done) {
+  it('should properly escape HTML entities present in {variables} (misc/varEscaping.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/varEscaping.html', model), '<p>&lt;span&gt;raw html&lt;/span&gt;</p>')
-    done()
   })
 
-  it('should not escape HTML entities present in {variables} which are properly {flagged|s} (misc/varNoEscaping.html)', function (done) {
-    assert.equalIgnoreSpaces(teddy.render('misc/varNoEscaping.html', model), '<p><span>raw html</span></p>')
-    done()
+  it('should not escape HTML entities present in {variables} which are properly {flagged|s} (misc/varNoEscaping.html)', function () {
+    assert.equalIgnoreSpaces(teddy.render('misc/varNoEscaping.html', model), '<div><span>raw html</span></div>')
   })
 
-  it('should not parse any code in <noteddy> tags (misc/varNoParsing.html)', function (done) {
+  it('should not parse any code in <noteddy> tags (misc/varNoParsing.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/varNoParsing.html', model), '<p>{escapeTest}</p>')
-    done()
   })
 
-  it('should remove {! server side comments !} (misc/serverSideComments.html)', function (done) {
+  it('should remove {! server side comments !} (misc/serverSideComments.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/serverSideComments.html', model), '<p>test test</p>')
-    done()
   })
 
   // #27 and #43
-  it('should remove {! {! nested !} server side comments !} (misc/serverSideCommentsNested.html)', function (done) {
+  it('should remove {! {! nested !} server side comments !} (misc/serverSideCommentsNested.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/serverSideCommentsNested.html', model), '<p>Any comments? </p>')
-    done()
   })
 
-  it('should not break when referencing objects that don\'t exist (misc/objectDoesNotExist.html)', function (done) {
-    assert.equalIgnoreSpaces(teddy.render('misc/objectDoesNotExist.html', model), ' <p>{doesntExist.someKey}</p> <p class=\'false\'></p>')
-    done()
+  it('should not break when referencing objects that don\'t exist (misc/objectDoesNotExist.html)', function () {
+    assert.equalIgnoreSpaces(teddy.render('misc/objectDoesNotExist.html', model), ' <p>{doesntExist.someKey}</p> <p class="false"></p>')
   })
 
-  it('should render plain HTML with no teddy tags with no changes (misc/plainHTML.html)', function (done) {
-    assert.equalIgnoreSpaces(teddy.render('misc/plainHTML.html', model), '<!DOCTYPE html><html lang=\'en\'><head><meta charset=\'utf-8\'><meta name=\'viewport\' content=\'width=device-width,initial-scale=1\'><meta name=\'format-detection\' content=\'telephone=no\'><title>Plain HTML</title><link rel=\'stylesheet\' href=\'/css/styles.css\'></head><body><main><p>This template contains no teddy tags. Just HTML.</p></main><script type=\'text/javascript\' src=\'/js/main.js\'></script></body></html>')
-    done()
+  it('should render plain HTML with no teddy tags with no changes (misc/plainHTML.html)', function () {
+    assert.equalIgnoreSpaces(teddy.render('misc/plainHTML.html', model), '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="format-detection" content="telephone=no"><title>Plain HTML</title><link rel="stylesheet" href="/css/styles.css"></head><body><main><p>This template contains no teddy tags. Just HTML.</p></main><script type="text/javascript" src="/js/main.js"></script></body></html>')
   })
 
-  it('should render {variables} within style element (misc/styleVariables.html)', function (done) {
+  it('should render {variables} within style element (misc/styleVariables.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/styleVariables.html', model), '<style>p{height:10px;}</style>')
-    done()
   })
 
-  it('should access property of {variable} object with {variable} (misc/variableObjectProperty.html)', function (done) {
+  it('should access property of {variable} object with {variable} (misc/variableObjectProperty.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/variableObjectProperty.html', model), '<p>guy</p>')
-    done()
   })
 
-  it('should escape curly braces from regex pattern (misc/regexEscaping.html)', function (done) {
-    assert.equalIgnoreSpaces(teddy.render('misc/regexEscaping.html', model), '<input type=\'text\' name=\'date\' placeholder=\'DD/MM/YYYY\' id=\'date\' pattern=\'^(3[0-1]|[1-2]\\d|[1-9]|0\\d)\\/(1[0-2]|[1-9]|0\\d)\\/[1-2]\\d{3}$\'>')
-    done()
+  it('should escape curly braces from regex pattern (misc/regexEscaping.html)', function () {
+    assert.equalIgnoreSpaces(teddy.render('misc/regexEscaping.html', model), '<input type="text" name="date" placeholder="DD/MM/YYYY" id="date" pattern="^(3[0-1]|[1-2]\\d|[1-9]|0\\d)\\/(1[0-2]|[1-9]|0\\d)\\/[1-2]\\d{3}$">')
   })
 
-  it('should trigger caching rollover given one template with 100 unique models (misc/variable.html)', function (done) {
-    let i
-    teddy.cacheRenders(true)
-    teddy.setDefaultCaches(10)
-    for (i = 0; i < 100; i++) {
-      teddy.render('misc/variable.html', { something: i })
-    }
-    const renderedTemplates = teddy.getRenderedTemplates()
-    assert.equalIgnoreSpaces(renderedTemplates['misc/variable.html'][0].renderedTemplate, '<p>90</p>')
-    teddy.setDefaultCaches(1)
-    teddy.cacheRenders(false)
-    done()
+  // TODO: fix this test; it works in node tests but breaks karma tests for some reason
+  it.skip('should render emojis correctly (misc/emojis.html)', function () {
+    assert.equalIgnoreSpaces(teddy.render('misc/emojis.html', model), '<p>🎉🥳🎈🎊</p>')
   })
 
-  it('should not cache a blacklisted template (misc/variable.html)', function (done) {
-    teddy.cacheRenders(true)
-    teddy.setRenderedTemplates({})
-    teddy.setCacheBlacklist(['misc/variable.html'])
-    teddy.render('misc/variable.html', { something: 1 })
-    const renderedTemplates = teddy.getRenderedTemplates()
-    assert.strictEqual(renderedTemplates['misc/variable.html'], undefined)
-    teddy.setCacheBlacklist([])
-    teddy.cacheRenders(false)
-    done()
+  it('should cache the contents of the cache element but not anything outside of it (misc/cacheElement.html)', async function () {
+    // these will be cached
+    const render1 = teddy.render('misc/cacheElement.html', { user: 'Joe', city: 'NY', value: 30 })
+    assert.equalIgnoreSpaces(render1, '<p>Dynamic: Welcome Joe!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    const render2 = teddy.render('misc/cacheElement.html', { user: 'Bob', city: 'SF', value: 60 })
+    assert.equalIgnoreSpaces(render2, '<p>Dynamic: Welcome Bob!</p><p>Cached: High temperature today in SF is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.SF.markup, '<p>Cached: High temperature today in SF is 60.</p>')
+    await timeout(100)
+
+    const render3 = teddy.render('misc/cacheElement.html', { user: 'Moe', city: 'LA', value: 80 })
+    assert.equalIgnoreSpaces(render3, '<p>Dynamic: Welcome Moe!</p><p>Cached: High temperature today in LA is 80.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.LA.markup, '<p>Cached: High temperature today in LA is 80.</p>')
+    await timeout(100)
+
+    // will display from cache
+    const render4 = teddy.render('misc/cacheElement.html', { user: 'Sue', city: 'NY', value: 300 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render4, '<p>Dynamic: Welcome Sue!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    const render5 = teddy.render('misc/cacheElement.html', { user: 'Jay', city: 'SF', value: 600 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render5, '<p>Dynamic: Welcome Jay!</p><p>Cached: High temperature today in SF is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.SF.markup, '<p>Cached: High temperature today in SF is 60.</p>')
+    await timeout(100)
+
+    const render6 = teddy.render('misc/cacheElement.html', { user: 'Mae', city: 'LA', value: 800 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render6, '<p>Dynamic: Welcome Mae!</p><p>Cached: High temperature today in LA is 80.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.LA.markup, '<p>Cached: High temperature today in LA is 80.</p>')
+    await timeout(100)
+
+    // should drop NY and replace it with NOLA due to max caches being 3 and NY being the least recently accessed
+    const render7 = teddy.render('misc/cacheElement.html', { name: 'weather', user: 'Liz', city: 'NOLA', value: 90 })
+    assert.equalIgnoreSpaces(render7, '<p>Dynamic: Welcome Liz!</p><p>Cached: High temperature today in NOLA is 90.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NOLA.markup, '<p>Cached: High temperature today in NOLA is 90.</p>')
+    const missingNY = !teddy.caches.weather.entries.NY
+    assert.equal(missingNY, true)
+
+    // see if deleting SF from the city cache works
+    teddy.clearCache('weather', 'SF')
+    const missingSF = !teddy.caches.weather.entries.SF
+    assert.equal(missingSF, true)
+
+    // see if deleting entire city cache works
+    teddy.clearCache('weather')
+    const missingAll = !teddy.caches.weather
+    assert.equal(missingAll, true)
   })
 
-  it('should only cache whitelisted templates (misc/variable.html)', function (done) {
-    teddy.cacheRenders(true)
-    teddy.setRenderedTemplates({})
-    teddy.setCacheWhitelist({ 'misc/variable.html': 1 })
-    teddy.render('misc/plainHTML.html', { something: 1 })
-    teddy.render('misc/variable.html', { something: 1 })
-    const renderedTemplates = teddy.getRenderedTemplates()
-    assert.strictEqual(renderedTemplates['misc/plainHTML.html'], undefined)
-    assert.equalIgnoreSpaces(renderedTemplates['misc/variable.html'][0].renderedTemplate, '<p>1</p>')
-    teddy.setCacheWhitelist({})
-    teddy.cacheRenders(false)
-    done()
+  it('should cache the contents of the cache element but not anything outside of it (misc/cacheElementMaxAge.html)', async function () {
+    // these will be cached
+    const render1 = teddy.render('misc/cacheElementMaxAge.html', { user: 'Joe', city: 'NY', value: 30 })
+    assert.equalIgnoreSpaces(render1, '<p>Dynamic: Welcome Joe!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    // will display from cache
+    const render4 = teddy.render('misc/cacheElementMaxAge.html', { user: 'Sue', city: 'NY', value: 300 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render4, '<p>Dynamic: Welcome Sue!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(1100)
+
+    // will not be cached
+    const render5 = teddy.render('misc/cacheElementMaxAge.html', { user: 'Moe', city: 'NY', value: 60 })
+    assert.equalIgnoreSpaces(render5, '<p>Dynamic: Welcome Moe!</p><p>Cached: High temperature today in NY is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 60.</p>')
   })
 
-  it('should only cache the whitelisted template the specified number of times (misc/variable.html)', function (done) {
-    let i
-    teddy.cacheRenders(true)
-    teddy.setRenderedTemplates({})
-    teddy.setDefaultCaches(10)
-    teddy.setCacheWhitelist({ 'misc/variable.html': 10 })
-    teddy.render('misc/plainHTML.html', { something: 1 })
-    for (i = 0; i < 100; i++) {
-      teddy.render('misc/variable.html', { something: i })
-    }
-    const renderedTemplates = teddy.getRenderedTemplates()
-    assert.strictEqual(renderedTemplates['misc/plainHTML.html'], undefined)
-    assert.equalIgnoreSpaces(renderedTemplates['misc/variable.html'][0].renderedTemplate, '<p>90</p>')
-    teddy.setCacheWhitelist({})
-    teddy.cacheRenders(false)
-    done()
+  it('should render cache element correctly with dynamic attributes (misc/cacheElementDynamicAttrs.html)', async function () {
+    teddy.clearCache('weather')
+
+    // these will be cached
+    const render1 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Joe', city: 'NY', value: 30 })
+    assert.equalIgnoreSpaces(render1, '<p>Dynamic: Welcome Joe!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    const render2 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Bob', city: 'SF', value: 60 })
+    assert.equalIgnoreSpaces(render2, '<p>Dynamic: Welcome Bob!</p><p>Cached: High temperature today in SF is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.SF.markup, '<p>Cached: High temperature today in SF is 60.</p>')
+    await timeout(100)
+
+    const render3 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Moe', city: 'LA', value: 80 })
+    assert.equalIgnoreSpaces(render3, '<p>Dynamic: Welcome Moe!</p><p>Cached: High temperature today in LA is 80.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.LA.markup, '<p>Cached: High temperature today in LA is 80.</p>')
+    await timeout(100)
+
+    // will display from cache
+    const render4 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Sue', city: 'NY', value: 300 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render4, '<p>Dynamic: Welcome Sue!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    const render5 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Jay', city: 'SF', value: 600 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render5, '<p>Dynamic: Welcome Jay!</p><p>Cached: High temperature today in SF is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.SF.markup, '<p>Cached: High temperature today in SF is 60.</p>')
+    await timeout(100)
+
+    const render6 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Mae', city: 'LA', value: 800 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render6, '<p>Dynamic: Welcome Mae!</p><p>Cached: High temperature today in LA is 80.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.LA.markup, '<p>Cached: High temperature today in LA is 80.</p>')
+    await timeout(100)
+
+    // should drop NY and replace it with NOLA due to max caches being 3 and NY being the least recently accessed
+    const render7 = teddy.render('misc/cacheElementDynamicAttrs.html', { name: 'weather', key: 'city', user: 'Liz', city: 'NOLA', value: 90 })
+    assert.equalIgnoreSpaces(render7, '<p>Dynamic: Welcome Liz!</p><p>Cached: High temperature today in NOLA is 90.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NOLA.markup, '<p>Cached: High temperature today in NOLA is 90.</p>')
+    const missingNY = !teddy.caches.weather.entries.NY
+    assert.equal(missingNY, true)
+
+    // see if deleting SF from the city cache works
+    teddy.clearCache('weather', 'SF')
+    const missingSF = !teddy.caches.weather.entries.SF
+    assert.equal(missingSF, true)
+
+    // see if deleting entire city cache works
+    teddy.clearCache('weather')
+    const missingAll = !teddy.caches.weather
+    assert.equal(missingAll, true)
   })
 
-  it('should avoid rendering templates that are not strings', function (done) {
+  it('should render cache element correctly with dynamic attributes (misc/cacheElementDynamicAttrsNested.html)', async function () {
+    teddy.clearCache('weather')
+
+    // these will be cached
+    const render1 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Joe', city: { acronym: 'NY' }, value: 30 })
+    assert.equalIgnoreSpaces(render1, '<p>Dynamic: Welcome Joe!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    const render2 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Bob', city: { acronym: 'SF' }, value: 60 })
+    assert.equalIgnoreSpaces(render2, '<p>Dynamic: Welcome Bob!</p><p>Cached: High temperature today in SF is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.SF.markup, '<p>Cached: High temperature today in SF is 60.</p>')
+    await timeout(100)
+
+    const render3 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Moe', city: { acronym: 'LA' }, value: 80 })
+    assert.equalIgnoreSpaces(render3, '<p>Dynamic: Welcome Moe!</p><p>Cached: High temperature today in LA is 80.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.LA.markup, '<p>Cached: High temperature today in LA is 80.</p>')
+    await timeout(100)
+
+    // will display from cache
+    const render4 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Sue', city: { acronym: 'NY' }, value: 300 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render4, '<p>Dynamic: Welcome Sue!</p><p>Cached: High temperature today in NY is 30.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NY.markup, '<p>Cached: High temperature today in NY is 30.</p>')
+    await timeout(100)
+
+    const render5 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Jay', city: { acronym: 'SF' }, value: 600 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render5, '<p>Dynamic: Welcome Jay!</p><p>Cached: High temperature today in SF is 60.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.SF.markup, '<p>Cached: High temperature today in SF is 60.</p>')
+    await timeout(100)
+
+    const render6 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Mae', city: { acronym: 'LA' }, value: 800 }) // new temperature value should not print because old value is cached
+    assert.equalIgnoreSpaces(render6, '<p>Dynamic: Welcome Mae!</p><p>Cached: High temperature today in LA is 80.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.LA.markup, '<p>Cached: High temperature today in LA is 80.</p>')
+    await timeout(100)
+
+    // should drop NY and replace it with NOLA due to max caches being 3 and NY being the least recently accessed
+    const render7 = teddy.render('misc/cacheElementDynamicAttrsNested.html', { name: 'weather', key: 'city.acronym', user: 'Liz', city: { acronym: 'NOLA' }, value: 90 })
+    assert.equalIgnoreSpaces(render7, '<p>Dynamic: Welcome Liz!</p><p>Cached: High temperature today in NOLA is 90.</p>')
+    assert.equalIgnoreSpaces(teddy.caches.weather.entries.NOLA.markup, '<p>Cached: High temperature today in NOLA is 90.</p>')
+    const missingNY = !teddy.caches.weather.entries.NY
+    assert.equal(missingNY, true)
+
+    // see if deleting SF from the city cache works
+    teddy.clearCache('weather', 'SF')
+    const missingSF = !teddy.caches.weather.entries.SF
+    assert.equal(missingSF, true)
+
+    // see if deleting entire city cache works
+    teddy.clearCache('weather')
+    const missingAll = !teddy.caches.weather
+    assert.equal(missingAll, true)
+  })
+
+  it('should render template, then render cached template, then render the template again when the cache expires (misc/cacheWholeTemplate.html)', async function () {
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: null,
+      maxAge: 1000
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', model)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse: ', time1)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', model)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Cached time to parse:     ', time2)
+
+    await timeout(1100)
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', model)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Non-cached time to parse after clearing cache: ', time3)
+    const fasterSlower = time2 < 100 && time3 > 100
+    assert.isTrue(fasterSlower)
+  })
+
+  it('should render template, then render cached template, then render the template again when the cache is explicitly cleared (misc/cacheWholeTemplate.html)', async function () {
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: null,
+      maxAge: 1000
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', model)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse: ', time1)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', model)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Cached time to parse:     ', time2)
+    teddy.clearCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: null
+    })
+
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', model)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Non-cached time to parse after clearing cache: ', time3)
+    const fasterSlower = time2 < 100 && time3 > 100
+    assert.isTrue(fasterSlower)
+  })
+
+  it('should render template, then render cached template, then render the template again when the cache expires via keyed values (misc/cacheWholeTemplate.html)', async function () {
+    const modelNY = Object.assign({ city: 'NY' }, model)
+    const modelSF = Object.assign({ city: 'SF' }, model)
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city',
+      maxAge: 1000
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse (NY): ', time1)
+
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Cached time to parse (NY):     ', time3)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Non-cached time to parse (SF): ', time2)
+
+    await timeout(1100)
+    const start4 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end4 = new Date().getTime()
+    const time4 = end4 - start4
+    console.log('    → Non-cached time to parse after clearing cache (SF): ', time4)
+    const fasterSlower = time3 < 100 && time4 > 100
+    assert.isTrue(fasterSlower)
+  })
+
+  it('should render template, then render cached template, then render the template again when the cache expires via keyed values when the cache is explicitly cleared (misc/cacheWholeTemplate.html)', async function () {
+    const modelNY = Object.assign({ city: 'NY' }, model)
+    const modelSF = Object.assign({ city: 'SF' }, model)
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city',
+      maxAge: 1000
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse (NY): ', time1)
+
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Cached time to parse (NY):     ', time3)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Non-cached time to parse (SF): ', time2)
+    teddy.clearCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city'
+    })
+
+    const start4 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end4 = new Date().getTime()
+    const time4 = end4 - start4
+    console.log('    → Non-cached time to parse after clearing cache (SF): ', time4)
+    const fasterSlower = time3 < 100 && time4 > 100
+    assert.isTrue(fasterSlower)
+  })
+
+  it('should render template, then render cached template, then render the template again when the cache expires via keyed values with nesting (misc/cacheWholeTemplate.html)', async function () {
+    const modelNY = Object.assign({ city: { acronym: 'NY' } }, model)
+    const modelSF = Object.assign({ city: { acronym: 'SF' } }, model)
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city.acronym',
+      maxAge: 1000
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse (NY): ', time1)
+
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Cached time to parse (NY):     ', time3)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Non-cached time to parse (SF): ', time2)
+
+    await timeout(1100)
+    const start4 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end4 = new Date().getTime()
+    const time4 = end4 - start4
+    console.log('    → Non-cached time to parse after clearing cache (SF): ', time4)
+    const fasterSlower = time3 < 100 && time4 > 100
+    assert.isTrue(fasterSlower)
+  })
+
+  it('should render template, then render cached template, then render the template again when the cache expires via keyed values with nesting when the cache is explicitly cleared (misc/cacheWholeTemplate.html)', async function () {
+    const modelNY = Object.assign({ city: { acronym: 'NY' } }, model)
+    const modelSF = Object.assign({ city: { acronym: 'SF' } }, model)
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city.acronym',
+      maxAge: 1000
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse (NY): ', time1)
+
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Cached time to parse (NY):     ', time3)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Non-cached time to parse (SF): ', time2)
+    teddy.clearCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city.acronym'
+    })
+
+    const start4 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end4 = new Date().getTime()
+    const time4 = end4 - start4
+    console.log('    → Non-cached time to parse after clearing cache (SF): ', time4)
+    const fasterSlower = time3 < 100 && time4 > 100
+    assert.isTrue(fasterSlower)
+  })
+
+  it('should drop caches which have expired due to maximum being reached (misc/cacheWholeTemplate.html)', async function () {
+    const modelNY = Object.assign({ city: { acronym: 'NY' } }, model)
+    const modelSF = Object.assign({ city: { acronym: 'SF' } }, model)
+    const modelLA = Object.assign({ city: { acronym: 'LA' } }, model)
+    let present
+    teddy.setCache({
+      template: 'misc/cacheWholeTemplate.html',
+      key: 'city.acronym',
+      maxAge: 1000,
+      maxCaches: 2
+    })
+    const start1 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelNY)
+    const end1 = new Date().getTime()
+    const time1 = end1 - start1
+    console.log('    → Non-cached time to parse (NY): ', time1)
+    present = typeof teddy.templateCaches['misc/cacheWholeTemplate.html']['city.acronym'].entries.NY === 'object'
+    assert.isTrue(present)
+    await timeout(100)
+
+    const start2 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelSF)
+    const end2 = new Date().getTime()
+    const time2 = end2 - start2
+    console.log('    → Non-cached time to parse (SF): ', time2)
+    present = typeof teddy.templateCaches['misc/cacheWholeTemplate.html']['city.acronym'].entries.SF === 'object'
+    assert.isTrue(present)
+    await timeout(100)
+
+    const start3 = new Date().getTime()
+    teddy.render('misc/cacheWholeTemplate.html', modelLA)
+    const end3 = new Date().getTime()
+    const time3 = end3 - start3
+    console.log('    → Non-cached time to parse (LA): ', time3)
+    present = typeof teddy.templateCaches['misc/cacheWholeTemplate.html']['city.acronym'].entries.LA === 'object'
+    assert.isTrue(present)
+
+    present = typeof teddy.templateCaches['misc/cacheWholeTemplate.html']['city.acronym'].entries.NY !== 'object'
+    assert.isTrue(present)
+  })
+
+  it('should avoid rendering templates that are not strings', function () {
     assert.equalIgnoreSpaces(teddy.render(5, model), '')
-    done()
   })
 
-  it('should avoid compiling templates that are not strings', function (done) {
-    assert.equalIgnoreSpaces(teddy.compile(5, model), '')
-    done()
-  })
-
-  it('should render a template with missing or invalid model (misc/emptyModelMarkup.html)', function (done) {
+  it('should render a template with missing or invalid model (misc/emptyModelMarkup.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/emptyModelMarkup.html', 1), '<div><p>Hello</p></div>')
-    done()
   })
 
-  it('should not render {variables} that don\'t exist in the model (misc/varNotInModel.html)', function (done) {
+  it('should not render {variables} that don\'t exist in the model (misc/varNotInModel.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/varNotInModel.html', model), '{noExist}')
-    done()
   })
 
-  it('should set each verbosity level', function (done) {
+  it('should set each verbosity level', function () {
     let verbosity = ''
     teddy.setVerbosity()
     verbosity += teddy.params.verbosity + ', '
@@ -213,82 +571,39 @@ describe('Misc', function () {
     } else {
       teddy.setVerbosity(0)
     }
-    done()
   })
 
-  it('should minify template with internal minifier (misc/templateToMinify.html)', function (done) {
-    teddy.compileAtEveryRender(true)
-    teddy.minify(true)
-    assert.equalIgnoreSpaces(teddy.render('misc/templateToMinify.html', model), '<!DOCTYPE html><html lang=\'en\'> <head> <meta charset=\'utf-8\'> <meta name=\'viewport\' content=\'width=device-width,initial-scale=1\'> <meta name=\'format-detection\' content=\'telephone=no\'> <title>Plain HTML</title> </head> <body> <main> <p>This template contains no teddy tags. Just HTML.</p> </main> </body></html>')
-    teddy.minify(false)
-    teddy.compileAtEveryRender(false)
-    done()
-  })
-
-  it('should avoid flushing cache of non strings', function (done) {
-    assert.equalIgnoreSpaces(teddy.flushCache(5), '')
-    done()
-  })
-
-  it('should render undefined variables as text (misc/undefinedVar.html)', function (done) {
+  it('should render undefined variables as text (misc/undefinedVar.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/undefinedVar.html', model), '<p>{undefinedVar}</p><p>{definedParent.undefinedMember}</p>')
-    done()
   })
 
-  it('should prevent infinitely referencing variables (misc/varRefVar.html)', function (done) {
+  it('should prevent infinitely referencing variables (misc/varRefVar.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/varRefVar.html', model), '{foo}')
-    done()
   })
 
-  it('should render empty strings as is for variables that are empty strings (misc/emptyStringVariable.html)', function (done) {
+  it('should render empty strings as is for variables that are empty strings (misc/emptyStringVariable.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/emptyStringVariable.html', model), '<p></p><p></p>')
-    done()
   })
 
-  it('should render template with extraneous whitespace properly (misc/extraneousWhitespace.html)', function (done) {
+  it('should render template with extraneous whitespace properly (misc/extraneousWhitespace.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/extraneousWhitespace.html', model), '<p>a</p><p>Something exists</p><p>b</p><p>Something exists</p><p>c</p><p>Something exists</p>')
-    done()
   })
 
-  it('should render variables that resolve to true or false boolean literals as strings (misc/printBooleanLiteral.html)', function (done) {
-    assert.equalIgnoreSpaces(teddy.render('misc/printBooleanLiteral.html', model), '<p>true</p><p>false</p>')
-    done()
+  it('should render {variables} that resolve to true or false boolean literals as strings (misc/printBooleanLiteral.html)', function () {
+    assert.equalIgnoreSpaces(teddy.render('misc/printBooleanLiteral.html', model), '<p>true</p><p>{somethingFalse}</p>')
   })
 
-  it('should render {zero} as 0 (misc/zero.html)', function (done) {
+  it('should render {zero} as 0 (misc/zero.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/zero.html', model), '<p>0</p>')
-    done()
   })
 
-  // wontfix: https://github.com/rooseveltframework/teddy/issues/357
-  it.skip('should not render excessive whitespace in a <textarea> as a result of teddy tag indententation / formatting (misc/excessiveWhitespace.html)', function (done) {
-    assert.equal(teddy.render('misc/excessiveWhitespace.html', model), '<textarea>Some text here</textarea>')
-    done()
-  })
-
-  it('should not render Teddy code in server-side comments in loops (misc/serverSideCommentsWithTeddyCode.html)', function (done) {
+  it('should not render Teddy code in server-side comments in loops (misc/serverSideCommentsWithTeddyCode.html)', function () {
     assert.equalIgnoreSpaces(teddy.render('misc/serverSideCommentsWithTeddyCode.html', model), '<div><p>test</p><p>test</p><p>test</p><p>test</p><p>test</p><p>test</p></div>')
-    done()
-  })
-
-  it('should execute render callback function for errors and non errors', function (done) {
-    teddy.setMaxPasses(100)
-    teddy.setVerbosity(3)
-    teddy.render('includes/includeInfiniteLoop.html', model, function (err, html) {
-      assert.equalIgnoreSpaces(err, '<li>Render aborted due to max number of passes (100) exceeded; there is a possible infinite loop in your template logic.</li>')
-      teddy.render('misc/variable.html', model, function (err, html) {
-        if (err) {
-          assert.fail(err)
-        }
-        assert.equalIgnoreSpaces(html, '<p>Some content</p>')
-        done()
-      })
-    })
   })
 
   if (typeof process === 'object') {
     ['chromium', 'firefox'].forEach(function (browserType) {
-      describe(`playwright- ${browserType}`, function () {
+      describe(`playground.html - ${browserType}`, function () {
         let page, browser, context
         beforeEach(async function () {
           this.timeout(0) // browsers (specifically firefox) needed a little extra time to launch

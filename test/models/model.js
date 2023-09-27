@@ -7,7 +7,7 @@ function makeModel () {
     circular: {},
     foo: '{bar}',
     bar: '{foo}',
-    pageContent: '<body>hello</body>',
+    pageContent: '<p>hello</p>',
     undefinedVar: undefined,
     emptyString: '',
     zero: 0,
@@ -21,10 +21,34 @@ function makeModel () {
       'three'
     ],
     names: { jack: 'guy', jill: 'girl', hill: 'landscape' },
+    nameList: [
+      'jack',
+      'jill',
+      'hill'
+    ],
+    objOfNames: {
+      nameList: { jack: 'guy', jill: 'girl', hill: 'landscape' }
+    },
+    arrayOfNames: [
+      {
+        jack: 'guy', jill: 'girl', hill: 'landscape'
+      }
+    ],
+    arrayOfNamesTwoMembers: [
+      {
+        jack: 'guy', jill: 'girl', hill: 'landscape'
+      },
+      {
+        jack: 'man', jill: 'woman', hill: 'scenary'
+      }
+    ],
     objects: [{ a: 1, b: 2, c: 3 }, { a: 4, b: 5, c: 6 }, { a: 7, b: 8, c: 9 }],
     arrays: [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
     missingNumbers: [{ a: undefined, b: undefined, c: undefined }, { a: 4, b: 5, c: 6 }, { a: 7, b: 8, c: 9 }],
     objectOfObjects: { one: { a: 1, b: 2, c: 3 }, two: { a: 4, b: 5, c: 6 }, three: { a: 7, b: 8, c: 9 } },
+    special: {
+      number: 2
+    },
     nestedObjects: [
       {
         num: 1,
@@ -84,6 +108,13 @@ function makeModel () {
         other_prop: 'other_prop_two'
       }
     },
+    topArr: [
+      {
+        subSubObj: {
+          subArr: []
+        }
+      }
+    ],
     nestedObj: {
       'Thing With Name 1': {
         'Subthing With Name 1': [
@@ -208,6 +239,38 @@ function makeModel () {
         ]
       }
     ],
+    moreNestedObjectsWithoutArray: {
+      num: 1,
+      children: [
+        {
+          num: 1,
+          bool: true,
+          children: [
+            'one',
+            'two',
+            'three'
+          ]
+        },
+        {
+          num: 2,
+          bool: false,
+          children: [
+            'four',
+            'five',
+            'six'
+          ]
+        },
+        {
+          num: 3,
+          bool: true,
+          children: [
+            'seven',
+            'eight',
+            'nine'
+          ]
+        }
+      ]
+    },
     nestedObjectWithTeddyVars: [
       {
         num: 1,
@@ -225,10 +288,20 @@ function makeModel () {
           }
         ]
       }
-    ]
+    ],
+    objectWithArrayInIt: {
+      memberArray: [
+        {
+          foo: 'value1',
+          bar: 'value2'
+        },
+        {
+          baz: 'value3',
+          zar: 'value4'
+        }
+      ]
+    }
   }
-
-  model.circular.circular = model.circular
 
   function randChars (n) {
     let i

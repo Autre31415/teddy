@@ -39,7 +39,10 @@
     </main>
 
     <!-- include teddy library -->
-    <script src='dist/teddy.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/teddy@latest/dist/teddy.min.js'></script>
+
+    <!-- uncomment this to do local testing -->
+    <!-- <script src='dist/teddy.js'></script> -->
 
     <script>
     (function() {
@@ -59,8 +62,8 @@
         }
 
         try {
-          //teddy.compile(document.getElementById('src').value, 'playground');
-          rendered = teddy.render(document.getElementById('src').value, json);
+          teddy.setTemplate('playground.html', document.getElementById('src').value)
+          rendered = teddy.render('playground.html', json);
         }
         catch (e) {
           console.log(e);

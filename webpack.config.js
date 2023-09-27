@@ -2,7 +2,7 @@ const path = require('path')
 
 module.exports = {
   name: 'main',
-  entry: './index.js',
+  entry: './teddy.js',
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'teddy.js',
@@ -14,6 +14,7 @@ module.exports = {
     fs: 'commonjs fs',
     path: 'commonjs path'
   },
+  mode: 'development',
   node: {
     __dirname: false
   }
