@@ -18,7 +18,7 @@
   "main": "dist/teddy.js",
   "readmeFilename": "README.md",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "cheerio": "1.0.0-rc.12",
@@ -27,12 +27,12 @@
   "devDependencies": {
     "browserify": "17.0.0",
     "c8": "8.0.1",
-    "chai": "4.3.8",
+    "chai": "4.3.10",
     "chai-string": "1.5.0",
     "codecov": "3.8.3",
     "cross-env": "7.0.3",
-    "eslint": "8.50.0",
-    "eslint-plugin-mocha": "10.1.0",
+    "eslint": "8.56.0",
+    "eslint-plugin-mocha": "10.2.0",
     "karma": "6.4.2",
     "karma-chrome-launcher": "3.2.0",
     "karma-cli": "2.0.0",
@@ -43,9 +43,9 @@
     "karma-mocha": "2.0.1",
     "karma-spec-reporter": "0.0.36",
     "mocha": "10.2.0",
-    "playwright": "1.37.1",
+    "playwright": "1.40.1",
     "standard": "17.1.0",
-    "webpack": "5.88.2",
+    "webpack": "5.89.0",
     "webpack-cli": "5.1.4"
   },
   "standard": {
