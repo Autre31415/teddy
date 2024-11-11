@@ -16,3 +16,6 @@ npm-debug.log
 node_modules
 coverage
 dist
+test-results
+test/client.*
+.npm-cache

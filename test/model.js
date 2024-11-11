@@ -1,4 +1,4 @@
-function makeModel () {
+export default function makeModel () {
   let i
   const charList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   const cl = charList.length
@@ -11,6 +11,7 @@ function makeModel () {
     undefinedVar: undefined,
     emptyString: '',
     zero: 0,
+    set: new Set(['a', 'b', 'c']),
     definedParent: { undefinedMember: undefined, emptyMember: '' },
     camelLetters: ['a', 'b', 'c'],
     missingLetter: ['a', undefined, 'c'],
@@ -97,6 +98,7 @@ function makeModel () {
       name: 'test'
     },
     teddyNull: null,
+    specialChars: 'special .$&@. chars',
     complexJSONString: '{"content":{"appTitle":"Some App","pageTitle":"{content.appTitle}"},"currentYear":1858,"mainDomain":"localhost:43711","NODE_ENV":"development"}',
     obj: {
       one: {
@@ -323,8 +325,6 @@ function makeModel () {
   return model
 }
 
-if (typeof module !== 'undefined') {
-  module.exports = makeModel
-} else {
+if (typeof module === 'undefined') {
   const model = makeModel() // eslint-disable-line no-unused-vars
 }

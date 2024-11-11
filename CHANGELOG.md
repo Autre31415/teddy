@@ -4,6 +4,60 @@
 
 - Put your changes here...
 
+## 0.6.15
+
+- Fixed a bug which caused the `cheerio`-driven modules to not work client-side if you choose to use them there.
+- Updated various dependencies.
+
+## 0.6.14
+
+- Finsihed work on `cheerioPolyfill.js` which makes it possible for Teddy to execute in client-side contexts without using `cheerio`, allowing for a very small bundle size for client-side Teddy (17kb minified).
+- Fixed client-side tests to test Teddy in the browser properly.
+- Refactored tests to improve maintainability.
+- Updated various dependencies.
+
+## 0.6.13
+
+- Removed `xregexp` and `html-entities` dependencies. Also Replaced `cheerio` with `cheerio/slim`. These changes have reduced bundle size significantly.
+- Began work on `cheerioPolyfill.js` which will allow Teddy to execute in client-side contexts without using `cheerio`. This will result in even smaller bundle sizes (currently around 16kb minified), however the work is unfinished.
+- Updated various dependencies.
+
+## 0.6.12
+
+- Downgraded `cheerio` to prevent webpack errors when using Teddy on frontend.
+- Updated various dependencies.
+
+## 0.6.11
+
+- Added new setting `teddy.setEmptyVarBehavior('hide')` that will make it possible for variables which don't resolve to display as empty strings instead of displaying the variable.
+
+## 0.6.10
+
+- Added support for template literal `${templateLiteral}` variables.
+- Fixed bug that caused Teddy to crash if you attempted to loop through a Set.
+- Replaced internal HTML entities scanner with the `html-entities` npm package.
+- Updated various dependencies.
+
+## 0.6.9
+
+- Fixed issue with rendering variables with empty strings piped through variables with flags.
+- Updated various dependencies.
+
+## 0.6.8
+
+- Fixed issue with rendering special characters correctly when piped through a teddy noparse flagged variable.
+- Updated various dependencies.
+
+## 0.6.7
+
+- Fixed issue causing server-side comments to not be stripped from templates parsed as strings instead of as files.
+- Updated various dependencies.
+
+## 0.6.6
+
+- Fixed issue causing the template caching feature to not work properly in Express apps.
+- Updated various dependencies.
+
 ## 0.6.5
 
 - Fixed scenario where one-line if with only a false condition could crash if it's fed by arguments from an include element.

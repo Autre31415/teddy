@@ -8,11 +8,17 @@
       "url": "https://github.com/rooseveltframework/teddy/graphs/contributors"
     }
   ],
-  "version": "0.6.5",
+  "version": "0.6.15",
   "files": [
-    "dist/teddy.js",
-    "dist/teddy.min.js"
+    "dist"
   ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/teddy.mjs",
+      "require": "./dist/teddy.cjs"
+    }
+  },
   "homepage": "https://github.com/rooseveltframework/teddy",
   "license": "CC-BY-4.0",
   "main": "dist/teddy.js",
@@ -21,32 +27,20 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "cheerio": "1.0.0-rc.12",
-    "xregexp": "5.1.1"
+    "cheerio": "1.0.0"
   },
   "devDependencies": {
-    "c8": "8.0.1",
-    "chai": "4.3.10",
-    "chai-string": "1.5.0",
+    "@playwright/test": "1.48.2",
+    "c8": "10.1.2",
     "codecov": "3.8.3",
     "cross-env": "7.0.3",
-    "eslint": "8.56.0",
-    "eslint-plugin-html": "7.1.0",
-    "eslint-plugin-mocha": "10.2.0",
-    "karma": "6.4.2",
-    "karma-chrome-launcher": "3.2.0",
-    "karma-cli": "2.0.0",
-    "karma-coverage": "2.2.1",
-    "karma-edge-launcher": "0.4.2",
-    "karma-firefox-launcher": "2.1.2",
-    "karma-html2js-preprocessor": "1.1.0",
-    "karma-mocha": "2.0.1",
-    "karma-spec-reporter": "0.0.36",
-    "mocha": "10.2.0",
-    "playwright": "1.40.1",
-    "standard": "17.1.0",
+    "eslint": "9.14.0",
+    "eslint-plugin-html": "8.1.2",
+    "eslint-plugin-mocha": "10.5.0",
+    "mocha": "10.8.2",
+    "standard": "17.1.2",
     "terser-webpack-plugin": "5.3.10",
-    "webpack": "5.89.0",
+    "webpack": "5.96.1",
     "webpack-cli": "5.1.4"
   },
   "standard": {
@@ -54,28 +48,28 @@
       "test/client.js"
     ]
   },
-  "eslintConfig": {
-    "extends": [
-      "standard"
+  "c8": {
+    "exclude": [
+      "dist/**",
+      "test/**",
+      "playwright.config.js"
     ],
-    "plugins": [
-      "mocha"
-    ],
-    "rules": {
-      "mocha/no-exclusive-tests": "error"
-    }
+    "reporter": [
+      "text",
+      "lcov"
+    ]
   },
   "scripts": {
     "build": "webpack",
-    "coverage": "cross-env NODE_ENV=cover c8 --reporter=text --reporter=lcov mocha --timeout 60000 test/*.js && karma start",
+    "coverage": "npm run coverage-server && npm run coverage-client",
+    "coverage-server": "npm run build && cross-env NODE_ENV=cover c8 mocha --timeout 60000 test/loaders/mocha.js",
+    "coverage-client": "npm run build && cross-env NODE_ENV=cover c8 --include=dist/teddy.js playwright test",
     "lint": "standard && eslint ./test && standard --plugin html *.html",
     "lint-fix": "standard --fix && eslint ./test && standard --plugin html *.html --fix",
-    "test": "npm run build && cross-env NODE_ENV=test mocha --timeout 60000 test && karma start",
-    "test-chrome": "npm run build && karma start --browsers ChromeHeadless",
-    "test-edge": "npm run build && karma start --browsers Edge",
-    "test-firefox": "npm run build && karma start --browsers Firefox",
-    "test-safari": "npm run build && karma start --browsers Safari",
-    "test-server": "npm run build && cross-env NODE_ENV=test mocha --timeout 60000 test/*.js",
+    "test": "npm run test-server && npm run test-client",
+    "t": "npm run test-server && npm run test-client",
+    "test-client": "npm run build && playwright test",
+    "test-server": "npm run build && cross-env NODE_ENV=test mocha --timeout 60000 test/loaders/mocha.js",
     "prepack": "npm run build"
   },
   "repository": {
@@ -91,8 +85,5 @@
   ],
   "_from": "teddy@*",
   "gitHead": "1dbbc4c73d7c8878cbe7fc0ba527c91018b4cea7",
-  "funding": {
-    "type": "individual",
-    "url": "https://github.com/sponsors/kethinov"
-  }
+  "funding": "https://www.paypal.com/donate/?hosted_button_id=2L2X8GRXZCGJ6"
 }
