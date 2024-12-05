@@ -4,6 +4,28 @@
 
 - Put your changes here...
 
+## 0.6.19
+
+- Made client-side Teddy parser a bit more tolerant of bad markup.
+
+## 0.6.18
+
+- Fixed a bug which caused client-side Teddy to rename yet more form elements accidentally.
+
+## 0.6.17
+
+- Fixed a bug which caused client-side Teddy to handle array length lookups differently from `cheerio`-driven Teddy.
+- Fixed a bug which caused client-side Teddy to crash if extra spaces were in markup attribute lists.
+- Fixed a bug which caused client-side Teddy to return the wrong data with 2 or more layers of object lookups if the object keys were camelCase.
+- Fixed a bug which caused client-side Teddy to rename some form elements accidentally.
+- Updated various dependencies.
+
+## 0.6.16
+
+- Fixed a bug which caused client-side Teddy to fail in some situations like putting a `<loop>` in a `<select>` element.
+- Deprecated a test that tests for passing numeric arguments to include tags, since this violates HTML grammar and never should've worked to begin with. It may still work with `cheerio`-driven Teddy because `cheerio`'s parser is more forgiving than a standards-compliant one unless and until `cheerio` deprecates support for that itself. Client-side Teddy will not support it, so for consistency the test has been removed.
+- Updated various dependencies.
+
 ## 0.6.15
 
 - Fixed a bug which caused the `cheerio`-driven modules to not work client-side if you choose to use them there.

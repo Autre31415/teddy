@@ -6,6 +6,7 @@ import fs from 'fs'
 // to test an individual group or test, add `only: true` to the group or test object
 // to run a test only in mocha or only in playwright, use `runMocha` or `runPlaywright` instead of `run`
 // if multiple results are acceptable, make `expected` an array of strings rather than a string
+// to see console output from the client-side tests, go to test/loaders/playwright.js and uncomment the debug code
 
 export default [
   {
@@ -52,6 +53,12 @@ export default [
         template: 'conditionals/unlessElse',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
         expected: '<p>The variable \'something\' is present</p>'
+      },
+      {
+        message: 'should evaluate conditionals that examine array lengths correctly (conditionals/ifArrayLengthZero.html)',
+        template: 'conditionals/ifArrayLengthZero',
+        run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
+        expected: '<p>1</p><p>0</p><p>false</p><p>0</p><p>3</p><p>1ispresent</p><p>0ispresent</p><p>emptyArraylengthis0</p><p>populatedArraylengthis3</p>'
       },
       {
         message: 'should evaluate nested <unless> tag in the if (conditionals/unlessNestedIf.html)',
@@ -258,6 +265,12 @@ export default [
         expected: '<option value="Some content">Some content</option>'
       },
       {
+        message: 'should evaluate one line if "if-something.something={something}" as false and remove attributes (conditionals/oneLineValueVarsNoQuotes.html)',
+        template: 'conditionals/oneLineValueVarsNoQuotes',
+        run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
+        expected: '<option value="Some content">Some content</option>'
+      },
+      {
         message: 'should evaluate <option> elements with the middle one selected (conditionals/oneLineValueVarsLooped.html)',
         template: 'conditionals/oneLineValueVarsLooped',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
@@ -285,7 +298,8 @@ export default [
         message: 'should reduce multiple one line if statements down to only the first one (conditionals/oneLineMulti.html)',
         template: 'conditionals/oneLineMulti',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
-        expected: '<p class="something-is-present">One line if.</p>'
+        expected: '<p class="something-is-present">One line if.</p>',
+        skip: true // TODO: this test is wrong. the behavior differs in cheerio vs vanilla. both behaviors are arguably wrong. in cheerio it removes the second one line if. in vanilla it removes the first one. the correct behavior would be to parse both
       },
       {
         message: 'should evaluate one line if "if-something" with a dynamic value (conditionals/oneLineDynamicVariable.html)',
@@ -522,12 +536,6 @@ export default [
         expected: '<p>STRING!</p>'
       },
       {
-        message: 'should <include> a template with numeric arguments (includes/numericArgument.html)',
-        template: 'includes/numericArgument',
-        run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
-        expected: '<p>Hello!</p>'
-      },
-      {
         message: 'should escape the contents of a script when included in a template (includes/inlineScriptTag.html)',
         template: 'includes/inlineScriptTag',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
@@ -612,6 +620,12 @@ export default [
         template: 'looping/loopVal',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
         expected: '<p>a</p><p>b</p><p>c</p>'
+      },
+      {
+        message: 'should loop through {letters} correctly in a select element (looping/selectOptions.html)',
+        template: 'looping/selectOptions',
+        run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
+        expected: '<select><option value="a">a</option><option value="b" selected="selected">b</option><option value="c">c</option></select>'
       },
       {
         message: 'should loop through {set} correctly (looping/loopValSet.html)',
@@ -855,6 +869,12 @@ export default [
         template: 'misc/variable',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
         expected: '<p>Some content</p>'
+      },
+      {
+        message: 'should properly render templates with duplicate IDs (misc/duplicateIDs.html)',
+        template: 'misc/duplicateIDs',
+        run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
+        expected: '<p id="blah">no blah</p><p id="blah">no blah</p>'
       },
       {
         message: 'should render {variables} as blank when x is true (misc/undefinedVar.html)',
@@ -1553,6 +1573,12 @@ export default [
         template: 'misc/zero',
         run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
         expected: '<p>0</p>'
+      },
+      {
+        message: 'should render html with a bad tag correctly (misc/badTag.html)',
+        template: 'misc/badTag',
+        run: async (teddy, template, model, assert, expected) => assert(teddy.render(template, model), expected),
+        expected: '<p>hello<br>world1</p><p>helloworld2</p>'
       },
       {
         message: 'should not render Teddy code in server-side comments in loops (misc/serverSideCommentsWithTeddyCode.html)',

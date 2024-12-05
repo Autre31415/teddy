@@ -154,7 +154,7 @@ function parseIncludes (dom, model, dynamic) {
     let tags
     // dynamic includes are includes like <include src="{sourcedFromVariable}"></include>
     if (dynamic) tags = dom('include') // parse all includes
-    else tags = dom('include:not([teddy_deferred_dynamic_include])') // parse only includes that aren't dynamic
+    else tags = dom('include:not([teddydeferreddynamicinclude])') // parse only includes that aren't dynamic
     if (tags.length > 0) {
       for (const el of tags) {
         // ensure this isn't the child of a no parse block
@@ -164,7 +164,7 @@ function parseIncludes (dom, model, dynamic) {
         while (!foundBody) {
           let parentName
           if (!parent) parentName = 'body'
-          else parentName = parent.name || parent.nodeName?.toLowerCase()
+          else parentName = parent.nodeName?.toLowerCase() || parent.name
           if (parentName === 'noparse' || parentName === 'noteddy') {
             next = true
             break
@@ -180,15 +180,15 @@ function parseIncludes (dom, model, dynamic) {
           continue
         }
         if (src.includes('{')) {
-          dom(el).attr('teddy_deferred_dynamic_include', 'true') // mark it dynamic and then skip it
+          dom(el).attr('teddydeferreddynamicinclude', 'true') // mark it dynamic and then skip it
           continue
         }
         loadTemplate(src) // load the partial into the template list
         const contents = templates[src]
         const localModel = Object.assign({}, model)
         for (const arg of dom(el).children()) {
-          if (browser) arg.name = arg.nodeName?.toLowerCase()
-          if (arg.name === 'arg') {
+          const argName = browser ? arg.nodeName?.toLowerCase() : arg.name
+          if (argName === 'arg') {
             if (browser) arg.attribs = getAttribs(arg)
             const argval = Object.keys(arg.attribs)[0]
             getOrSetObjectByDotNotation(localModel, argval, dom(arg).html())
@@ -222,7 +222,7 @@ function parseConditionals (dom, model) {
         while (!foundBody) {
           let parentName
           if (!parent) parentName = 'body'
-          else parentName = parent.name || parent.nodeName?.toLowerCase()
+          else parentName = parent.nodeName?.toLowerCase() || parent.name
           if (parentName === 'loop' || parentName === 'noparse' || parentName === 'noteddy') {
             next = true
             break
@@ -233,15 +233,16 @@ function parseConditionals (dom, model) {
         // get conditions
         let args = []
         if (browser) el.attribs = getAttribs(el)
-        for (const attr in el.attribs) {
+        for (let attr in el.attribs) {
+          if (attr.includes('-teddyduplicate')) attr = attr.split('-teddyduplicate')[0] // the condition is a duplicate, so remove the `-teddyduplicate1` from `conditionName-teddyduplicate1`, `conditionName-teddyduplicate2`, etc
           const val = el.attribs[attr]
           if (val) args.push(`${attr}=${val}`)
           else args.push(attr)
         }
         // check if it's an if tag and not an unless tag
         let isIf = true
-        if (browser) el.name = el.nodeName?.toLowerCase()
-        if (el.name === 'unless') isIf = false
+        const elName = browser ? el.nodeName?.toLowerCase() : el.name
+        if (elName === 'unless') isIf = false
         // evaluate conditional
         const condResult = evaluateConditional(args, model)
         if ((isIf && condResult) || ((!isIf && !condResult))) {
@@ -249,8 +250,8 @@ function parseConditionals (dom, model) {
           let nextSibling = el.nextSibling
           const removeStack = []
           while (nextSibling) {
-            if (browser) nextSibling.name = nextSibling.nodeName?.toLowerCase()
-            switch (nextSibling.name) {
+            const nextSiblingName = browser ? nextSibling.nodeName?.toLowerCase() : nextSibling.name
+            switch (nextSiblingName) {
               case 'elseif':
               case 'elseunless':
               case 'else':
@@ -272,8 +273,8 @@ function parseConditionals (dom, model) {
           // true block is false; find the next elseif, elseunless, or else tag to evaluate
           let nextSibling = el.nextSibling
           while (nextSibling) {
-            if (browser) nextSibling.name = nextSibling.nodeName?.toLowerCase()
-            switch (nextSibling.name) {
+            const nextSiblingName = browser ? nextSibling.nodeName?.toLowerCase() : nextSibling.name
+            switch (nextSiblingName) {
               case 'elseif':
                 // get conditions
                 args = []
@@ -290,8 +291,8 @@ function parseConditionals (dom, model) {
                   nextSibling = el.nextSibling
                   const removeStack = []
                   while (nextSibling) {
-                    if (browser) nextSibling.name = nextSibling.nodeName?.toLowerCase()
-                    switch (nextSibling.name) {
+                    const nextSiblingName = browser ? nextSibling.nodeName?.toLowerCase() : nextSibling.name
+                    switch (nextSiblingName) {
                       case 'elseif':
                       case 'elseunless':
                       case 'else':
@@ -332,8 +333,8 @@ function parseConditionals (dom, model) {
                   nextSibling = el.nextSibling
                   const removeStack = []
                   while (nextSibling) {
-                    if (browser) nextSibling.name = nextSibling.nodeName?.toLowerCase()
-                    switch (nextSibling.name) {
+                    const nextSiblingName = browser ? nextSibling.nodeName?.toLowerCase() : nextSibling.name
+                    switch (nextSiblingName) {
                       case 'elseif':
                       case 'elseunless':
                       case 'else':
@@ -482,7 +483,7 @@ function parseOneLineConditionals (dom, model) {
           }
         }
         if (defer) {
-          dom(el).attr('teddy_deferred_one_line_conditional', 'true')
+          dom(el).attr('teddydeferredonelineconditional', 'true')
           continue
         }
         // ensure this isn't the child of a loop or a no parse block
@@ -492,7 +493,7 @@ function parseOneLineConditionals (dom, model) {
         while (!foundBody) {
           let parentName
           if (!parent) parentName = 'body'
-          else parentName = parent.name || parent.nodeName?.toLowerCase()
+          else parentName = parent.nodeName?.toLowerCase() || parent.name
           if (parentName === 'loop' || parentName === 'noparse' || parentName === 'noteddy') {
             next = true
             break
@@ -505,19 +506,21 @@ function parseOneLineConditionals (dom, model) {
         let ifTrue
         let ifFalse
         if (browser) el.attribs = getAttribs(el)
-        for (const attr in el.attribs) {
+        for (const origAttr in el.attribs) {
+          let attr = origAttr
           const val = el.attribs[attr]
+          if (attr.includes('-teddyduplicate')) attr = attr.split('-teddyduplicate')[0] // the condition is a duplicate, so remove the `-teddyduplicate1` from `conditionName-teddyduplicate1`, `conditionName-teddyduplicate2`, etc
           if (attr.startsWith('if-')) {
             const parts = attr.split('if-')
             if (val) cond = [`${[parts[1]]}=${val}`] // if-something="Some content"
             else cond = [`${[parts[1]]}`] // if-something
-            dom(el).removeAttr(attr)
+            dom(el).removeAttr(origAttr)
           } else if (attr === 'true') {
             ifTrue = val.replaceAll('&quot;', '"') // true="class='blah'"
-            dom(el).removeAttr(attr)
+            dom(el).removeAttr(origAttr)
           } else if (attr === 'false') {
-            ifFalse = val.replaceAll('&quot;', '"') // true="class='blah'"
-            dom(el).removeAttr(attr)
+            ifFalse = val.replaceAll('&quot;', '"') // false="class='blah'"
+            dom(el).removeAttr(origAttr)
           }
         }
         // evaluate conditional
@@ -714,16 +717,16 @@ function cleanupStrayTeddyTags (dom) {
   let parsedTags
   do {
     parsedTags = 0
-    const tags = dom('[teddy_deferred_one_line_conditional], include, arg, if, unless, elseif, elseunless, else, loop, cache')
+    const tags = dom('[teddydeferredonelineconditional], include, arg, if, unless, elseif, elseunless, else, loop, cache')
     if (tags.length > 0) {
       for (const el of tags) {
-        if (browser) el.name = el.nodeName?.toLowerCase()
-        if (el.name === 'include' || el.name === 'arg' || el.name === 'if' || el.name === 'unless' || el.name === 'elseif' || el.name === 'elseunless' || el.name === 'else' || el.name === 'loop' || el.name === 'cache') {
+        const tagName = browser ? el.nodeName?.toLowerCase() : el.name
+        if (tagName === 'include' || tagName === 'arg' || tagName === 'if' || tagName === 'unless' || tagName === 'elseif' || tagName === 'elseunless' || tagName === 'else' || tagName === 'loop' || tagName === 'cache') {
           dom(el).remove()
         }
         if (browser) el.attribs = getAttribs(el)
         for (const attr in el.attribs) {
-          if (attr === 'true' || attr === 'false' || attr === 'teddy_deferred_one_line_conditional' || attr.startsWith('if-')) {
+          if (attr === 'true' || attr === 'false' || attr === 'teddydeferredonelineconditional' || attr.startsWith('if-')) {
             dom(el).removeAttr(attr)
           }
         }
@@ -828,8 +831,13 @@ function getOrSetObjectByDotNotation (obj, dotNotation, value) {
       else return obj[dotNotation[0]]
     }
     return false
-  } else return getOrSetObjectByDotNotation(obj[dotNotation[0]], dotNotation.slice(1), value)
+  } else {
+    if (browser) obj = caseInsensitiveLookup(obj, dotNotation[0])
+    else obj = obj[dotNotation[0]]
+    return getOrSetObjectByDotNotation(obj, dotNotation.slice(1), value)
+  }
   function caseInsensitiveLookup (obj, key) {
+    if (key === 'length') return obj.length
     const lowerCaseKey = key.toLowerCase()
     const normalizedObj = Object.keys(obj).reduce((acc, k) => {
       acc[k.toLowerCase()] = obj[k]
@@ -1070,7 +1078,7 @@ function render (template, model, callback) {
       renderedTemplate = removeTeddyComments(renderedTemplate)
       parseDynamicIncludes = false
     }
-    if (renderedTemplate.includes('teddy_deferred_dynamic_include="true"')) {
+    if (renderedTemplate.includes('teddydeferreddynamicinclude="true"')) {
       oldTemplate = '' // reset old template to force another pass
       parseDynamicIncludes = true
     }
@@ -1082,7 +1090,7 @@ function render (template, model, callback) {
   } while (oldTemplate !== renderedTemplate)
 
   // remove stray teddy tags if any exist
-  if (renderedTemplate.includes('teddy_deferred_one_line_conditional="true"') || renderedTemplate.includes('</include>') || renderedTemplate.includes('</arg>') || renderedTemplate.includes('</if>') || renderedTemplate.includes('</unless>') || renderedTemplate.includes('</elseif>') || renderedTemplate.includes('</elseunless>') || renderedTemplate.includes('</else>') || renderedTemplate.includes('</loop>') || renderedTemplate.includes('</cache>')) {
+  if (renderedTemplate.includes('teddydeferredonelineconditional="true"') || renderedTemplate.includes('</include>') || renderedTemplate.includes('</arg>') || renderedTemplate.includes('</if>') || renderedTemplate.includes('</unless>') || renderedTemplate.includes('</elseif>') || renderedTemplate.includes('</elseunless>') || renderedTemplate.includes('</else>') || renderedTemplate.includes('</loop>') || renderedTemplate.includes('</cache>')) {
     dom = cheerioLoad(renderedTemplate || '', cheerioOptions)
     dom = cleanupStrayTeddyTags(dom)
     renderedTemplate = dom.html()
